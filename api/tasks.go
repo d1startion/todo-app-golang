@@ -2,17 +2,22 @@ package api
 
 import (
 	"net/http"
+
 	"todo-app/db"
 )
+
+const tasksLimit = 50
 
 type TasksResp struct {
 	Tasks []*db.Task `json:"tasks"`
 }
 
 func TasksHandler(w http.ResponseWriter, r *http.Request) {
-	tasks, err := db.Tasks(50)
+	tasks, err := db.Tasks(tasksLimit)
 	if err != nil {
-		writeJSON(w, map[string]string{"error": err.Error()})
+		writeJSON(w, http.StatusInternalServerError, map[string]string{
+			"error": err.Error(),
+		})
 		return
 	}
 
@@ -20,7 +25,5 @@ func TasksHandler(w http.ResponseWriter, r *http.Request) {
 		tasks = []*db.Task{}
 	}
 
-	writeJSON(w, TasksResp{
-		Tasks: tasks,
-	})
+	writeJSONOK(w, TasksResp{Tasks: tasks})
 }

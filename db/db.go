@@ -23,7 +23,6 @@ CREATE INDEX idx_scheduler_date ON scheduler (date);
 `
 
 func Init(dbFile string) error {
-
 	_, err := os.Stat(dbFile)
 	install := false
 	if err != nil {
@@ -42,6 +41,13 @@ func Init(dbFile string) error {
 		}
 	}
 
+	return nil
+}
+
+func Close() error {
+	if db != nil {
+		return db.Close()
+	}
 	return nil
 }
 

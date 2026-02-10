@@ -7,16 +7,18 @@ import (
 	"todo-app/db"
 )
 
+const dateLayout = "20060102"
+
 func checkDate(task *db.Task) error {
 	now := time.Now()
-	today := now.Format("20060102")
+	today := now.Format(dateLayout)
 
 	if task.Date == "" {
 		task.Date = today
 		return nil
 	}
 
-	if _, err := time.Parse("20060102", task.Date); err != nil {
+	if _, err := time.Parse(dateLayout, task.Date); err != nil {
 		return errors.New("Некорректная дата")
 	}
 

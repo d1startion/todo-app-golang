@@ -8,9 +8,8 @@ import (
 
 func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
-
 	if id == "" {
-		writeJSON(w, map[string]string{
+		writeJSON(w, http.StatusBadRequest, map[string]string{
 			"error": "Не указан идентификатор",
 		})
 		return
@@ -18,11 +17,11 @@ func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	task, err := db.GetTask(id)
 	if err != nil {
-		writeJSON(w, map[string]string{
+		writeJSON(w, http.StatusNotFound, map[string]string{
 			"error": "Задача не найдена",
 		})
 		return
 	}
 
-	writeJSON(w, task)
+	writeJSONOK(w, task)
 }

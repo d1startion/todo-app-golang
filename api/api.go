@@ -27,12 +27,14 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 	}
 
 	switch parts[0] {
+
 	case "y":
 		d := start
 		for {
 			prev := d
 			d = d.AddDate(1, 0, 0)
-			if prev.Month() == 2 && prev.Day() == 29 && d.Month() == 2 && d.Day() == 28 {
+			if prev.Month() == 2 && prev.Day() == 29 &&
+				d.Month() == 2 && d.Day() == 28 {
 				d = d.AddDate(0, 0, 1)
 			}
 			if d.After(now) {
@@ -48,6 +50,7 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 		if err != nil || n <= 0 || n > 400 {
 			return "", errors.New("bad d")
 		}
+
 		d := start
 		for {
 			d = d.AddDate(0, 0, n)
@@ -60,6 +63,7 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 		if len(parts) != 2 {
 			return "", errors.New("bad w")
 		}
+
 		ok := map[int]bool{}
 		for _, s := range strings.Split(parts[1], ",") {
 			v, err := strconv.Atoi(s)
@@ -68,6 +72,7 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 			}
 			ok[v] = true
 		}
+
 		d := start
 		for {
 			d = d.AddDate(0, 0, 1)
@@ -87,6 +92,7 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 
 		days := []int{}
 		negatives := []int{}
+
 		for _, s := range strings.Split(parts[1], ",") {
 			v, err := strconv.Atoi(s)
 			if err != nil || v == 0 || v < -31 || v > 31 {
@@ -98,13 +104,12 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 			}
 		}
 
-		nNeg := len(negatives)
-		if nNeg > 1 {
+		if len(negatives) > 1 {
 			sort.Ints(negatives)
-			if negatives[nNeg-1] != -1 {
+			if negatives[len(negatives)-1] != -1 {
 				return "", errors.New("bad m")
 			}
-			for i := 1; i < nNeg; i++ {
+			for i := 1; i < len(negatives); i++ {
 				if negatives[i] != negatives[i-1]+1 {
 					return "", errors.New("bad m")
 				}
@@ -129,7 +134,10 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 		d := start
 		for i := 0; i < 4000; i++ {
 			if d.After(now) && months[int(d.Month())] {
-				last := time.Date(d.Year(), d.Month()+1, 0, 0, 0, 0, 0, time.UTC).Day()
+				last := time.Date(
+					d.Year(), d.Month()+1, 0, 0, 0, 0, 0, time.UTC,
+				).Day()
+
 				for _, want := range days {
 					day := want
 					if want < 0 {
@@ -146,7 +154,7 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 			d = d.AddDate(0, 0, 1)
 		}
 
-		return "", errors.New("no next date found in reasonable time")
+		return "", errors.New("no next date found")
 
 	default:
 		return "", errors.New("bad rule")
@@ -154,6 +162,11 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 }
 
 func NextDateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	nowStr := r.FormValue("now")
 	date := r.FormValue("date")
 	repeat := r.FormValue("repeat")
@@ -177,5 +190,5 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(res))
+	_, _ = w.Write([]byte(res))
 }
